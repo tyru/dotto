@@ -39,7 +39,7 @@ chdir $FindBin::Bin or die "$FindBin::Bin:$!";
 my $needhelp;
 my $home;
 my $username;
-my $config_file = 'files.yaml';
+my $config_file;
 my $force = 0;
 my $verbose = 0;
 GetOptions(
@@ -73,6 +73,9 @@ else {
     ($username, $home) = determine_user_and_home;
 }
 
+if (!defined $config_file && exists $ENV{DOTTORC}) {
+    $config_file = $ENV{DOTTORC};
+}
 my $c = load_config($config_file);
 
 for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {

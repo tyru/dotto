@@ -27,7 +27,7 @@ my $home;
 my $username;
 my $force_overwrite = 0;
 my $verbose = 0;
-my $config_file = 'files.yaml';
+my $config_file;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -50,6 +50,9 @@ else {
     ($username, $home) = determine_user_and_home;
 }
 
+if (!defined $config_file && exists $ENV{DOTTORC}) {
+    $config_file = $ENV{DOTTORC};
+}
 my $c = load_config($config_file);
 
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
