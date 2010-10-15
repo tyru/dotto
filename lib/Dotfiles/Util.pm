@@ -6,11 +6,13 @@ use utf8;
 use YAML ();
 use File::Path qw(rmtree mkpath);
 use File::Basename qw(dirname);
+use File::Spec::Functions qw(canonpath);
 
 use base qw/Exporter/;
 our @EXPORT = qw(
     install install_symlink is_mswin say load_config
     get_home_from_user determine_user_and_home
+    same_file
 );
 
 
@@ -67,6 +69,15 @@ sub is_mswin {
 
 sub say {
     print @_, "\n" # orz
+}
+
+sub same_file {
+    my ($f1, $f2) = @_;
+    # TODO: broken symlinks
+    for ($f1, $f2) {
+        $_ = readlink while -l;
+    }
+    canonpath($f1) eq canonpath($f2);
 }
 
 sub load_config {
