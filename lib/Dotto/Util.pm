@@ -52,6 +52,11 @@ sub install {
 sub install_symlink {
     my ($src, $dest, $user) = @_;
 
+    if (_same_file($src, $dest)) {
+        warn "Skip same file: $src, $dest\n";
+        return;
+    }
+
     # NOTE: ln overwrites $dest.
     if ($^O eq 'MSWin32' || $^O eq 'msys') {
         die "install_symlink(): Your platform does not support symbolic link.\n";
