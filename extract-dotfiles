@@ -56,10 +56,13 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
 my $c = load_config($config_file);
 
 for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
-    my ($src, $dest);
+    my $src  = catfile($c->{directory}, $file);
+    my $dest = catfile($home, $file);
 
-    $src  = catfile($c->{directory}, $file);
-    $dest = catfile($home, $file);
+    if (same_file $src, $dest) {
+        warn "Skip same file: $src, $dest\n";
+        next;
+    }
 
     say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
