@@ -72,7 +72,9 @@ sub say {
 sub load_config {
     my ($config_file) = @_;
     die "$config_file:$!\n" unless -f $config_file;
-    YAML::LoadFile($config_file);
+    my $c = YAML::LoadFile($config_file);
+    $c->{directory} = $ENV{DOTTO_DIRECTORY} if !exists $c->{directory} && exists $ENV{DOTTO_DIRECTORY};
+    $c;
 }
 
 sub convert_filename {
