@@ -25,7 +25,7 @@ sub install {
     }
     # Delete destination
     # TODO: Use rsync?
-    rmtree($dest) or warn "$dest:Can't remove file(s).\n";
+    rmtree($dest);
 
     unless (-d (my $dir = dirname($dest))) {
         mkpath $dir or die "$dir: $!";
@@ -71,7 +71,7 @@ sub say {
 
 sub load_config {
     my ($config_file) = @_;
-    die unless -f $config_file;
+    die "$config_file:$!\n" unless -f $config_file;
     YAML::LoadFile($config_file);
 }
 
