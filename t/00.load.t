@@ -1,7 +1,7 @@
 use Test::More tests => 1;
 
 BEGIN {
-use_ok( 'Dotfiles::Util' );
+use_ok( 'Dotto::Util' );
 }
 
-diag( "Testing Dotfiles::Util $Dotfiles::Util::VERSION" );
+diag( "Testing Dotto::Util $Dotfiles::Util::VERSION" );
