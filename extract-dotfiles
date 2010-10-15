@@ -59,11 +59,6 @@ for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
     my $src  = catfile($c->{directory}, $file);
     my $dest = catfile($home, $file);
 
-    if (same_file $src, $dest) {
-        warn "Skip same file: $src, $dest\n";
-        next;
-    }
-
     say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
 }

@@ -70,11 +70,6 @@ for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
     my $src  = catfile($home, $file);
     my $dest = catfile($c->{directory}, $file);
 
-    if (same_file $src, $dest) {
-        warn "Skip same file: $src, $dest\n";
-        next;
-    }
-
     say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
 }

@@ -12,7 +12,6 @@ use base qw/Exporter/;
 our @EXPORT = qw(
     install install_symlink is_mswin say load_config
     get_home_from_user determine_user_and_home
-    same_file
 );
 
 
@@ -20,6 +19,11 @@ our @EXPORT = qw(
 sub install {
     # install $src to $dest as $user.
     my ($src, $dest, $user) = @_;
+
+    if (_same_file($src, $dest)) {
+        warn "Skip same file: $src, $dest\n";
+        return;
+    }
 
     unless (-e $src) {
         warn "$src:$!\n";
@@ -71,7 +75,7 @@ sub say {
     print @_, "\n" # orz
 }
 
-sub same_file {
+sub _same_file {
     my ($f1, $f2) = @_;
     # TODO: broken symlinks
     for ($f1, $f2) {
