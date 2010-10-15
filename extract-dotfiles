@@ -25,11 +25,11 @@ sub usage () {
 ### main ###
 chdir $FindBin::Bin or die "$FindBin::Bin:$!";
 
+my $needhelp;
 my $home;
 my $username;
 my $config_file;
-
-my ($needhelp);
+my $verbose;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -37,6 +37,8 @@ GetOptions(
         => \$username,
     'c|config-file=s'
         => \$config_file,
+    'v|verbose'
+        => \$verbose,
 ) or usage;
 usage if $needhelp;
 
@@ -59,7 +61,7 @@ for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
     $src  = catfile($c->{directory}, $file);
     $dest = catfile($home, $file);
 
-    say("$src -> $dest");
+    say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
 }
 
