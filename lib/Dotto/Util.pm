@@ -8,12 +8,18 @@ use File::Path qw(rmtree mkpath);
 use File::Basename qw(dirname);
 use File::Spec::Functions qw(canonpath);
 use File::Copy::Recursive qw(rcopy);
-use File::Find qw//;
+use File::Find qw();
 
-use base qw/Exporter/;
+use base qw(Exporter);
 our @EXPORT_OK = qw(
-    install install_symlink is_mswin say load_config
-    get_home_from_user determine_user_and_home chown_user
+    chown_user
+    determine_user_and_home
+    get_home_from_user
+    install
+    install_symlink
+    is_mswin
+    load_config
+    say
 );
 
 
