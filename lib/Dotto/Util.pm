@@ -46,24 +46,19 @@ sub install {
 sub install_symlink {
     my ($src, $dest, $user) = @_;
 
+    if ($^O =~ /\A(MSWin32|msys|cygwin)\Z/) {
+        die "install_symlink(): Your platform does not support symbolic link.\n";
+    }
     if (_same_file($src, $dest)) {
         warn "Skip same file: $src, $dest\n";
         return;
     }
-
-    # NOTE: ln overwrites $dest.
-    if ($^O eq 'MSWin32' || $^O eq 'msys') {
-        die "install_symlink(): Your platform does not support symbolic link.\n";
-    } elsif ($^O eq 'cygwin') {
-        system('ln', '-sf', $src, $dest);
-        system('chown', $user, $dest);
-    } elsif ($^O eq 'freebsd') {
-        system('ln', '-sf', $src, $dest);
-        system('chown', $user, $dest);
-    } else {
-        system('ln', '-sf', $src, $dest);
-        system('chown', "$user:$user", $dest);
+    if (-e $dest) {
+        die "$dest must not exists.\n";
     }
+
+    symlink $src, $dest;
+    chown_user($dest, $user);
 }
 
 sub chown_user {
