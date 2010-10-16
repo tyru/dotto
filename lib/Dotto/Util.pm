@@ -11,9 +11,9 @@ use File::Copy::Recursive qw(rcopy);
 use File::Find qw//;
 
 use base qw/Exporter/;
-our @EXPORT = qw(
+our @EXPORT_OK = qw(
     install install_symlink is_mswin say load_config
-    get_home_from_user determine_user_and_home
+    get_home_from_user determine_user_and_home chown_user
 );
 
 

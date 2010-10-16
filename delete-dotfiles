@@ -12,7 +12,7 @@ use File::Spec::Functions qw(catfile);
 
 use FindBin ();
 use lib "$FindBin::Bin/lib";
-use Dotto::Util;
+use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename);
 
 
 sub usage () {
