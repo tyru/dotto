@@ -15,13 +15,12 @@ use FindBin ();
 use lib "$FindBin::Bin/lib";
 use Dotto::Util;
 
-### sub ###
+
 sub usage () {
     pod2usage(-verbose => 2);
 }
 
 
-### main ###
 my $needhelp;
 my $home;
 my $username;

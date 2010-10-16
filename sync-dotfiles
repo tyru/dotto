@@ -16,9 +16,6 @@ use Dotto::Util;
 use Getopt::Long qw(:config gnu_compat no_bundling no_ignore_case);
 
 
-
-### sub ###
-
 sub usage () {
     die <<EOF;
     Usage: $0 [OPTIONS]
@@ -29,9 +26,6 @@ OPTIONS:
 EOF
 }
 
-
-
-### main ###
 
 # chdir parent directory of this script
 chdir $FindBin::Bin or die "$FindBin::Bin:$!";
