@@ -21,8 +21,6 @@ sub usage () {
 }
 
 
-chdir $FindBin::Bin or die "$FindBin::Bin:$!";
-
 my $needhelp;
 my $home;
 my $username;

@@ -26,9 +26,6 @@ EOF
 }
 
 
-# chdir parent directory of this script
-chdir $FindBin::Bin or die "$FindBin::Bin:$!";
-
 my $needhelp;
 my $home;
 my $username;
