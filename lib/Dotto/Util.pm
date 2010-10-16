@@ -7,6 +7,8 @@ use YAML ();
 use File::Path qw(rmtree mkpath);
 use File::Basename qw(dirname);
 use File::Spec::Functions qw(canonpath);
+use File::Copy::Recursive qw(rcopy);
+use File::Find qw//;
 
 use base qw/Exporter/;
 our @EXPORT = qw(
@@ -36,16 +38,21 @@ sub install {
     unless (-d (my $dir = dirname($dest))) {
         mkpath $dir or die "$dir: $!";
     }
-    system('cp', '-R' . ($^O eq 'MSWin32' ? '' : 'L'), $src, $dest);
+    # rcopy() preserves attributes (permission,mtime,symlink,etc.).
+    rcopy($src, $dest);
 
-    if ($^O eq 'MSWin32' || $^O eq 'msys') {
-        # nop
-    } elsif ($^O eq 'cygwin') {
-        system('chown', '-R', $user, $dest);
-    } elsif ($^O eq 'freebsd') {
-        system('chown', '-R', $user, $dest);
-    } else {
-        system('chown', '-R', "$user:$user", $dest);
+    my ($uid, $gid) = (getpwnam $user)[2,3];
+    die "$user not in passwd file\n" unless defined $uid;
+    if (-f $dest) {
+        chown $uid, $gid, $dest;
+    }
+    else {
+        # chown recursively.
+        File::Find::find({
+            wanted => sub {
+                chown $uid, $gid, $_;
+            },
+        }, $dest);
     }
 }
 
