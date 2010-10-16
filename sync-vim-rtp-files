@@ -1,16 +1,25 @@
 #!/bin/sh
 
+if [ $# = 0 ]; then
+    echo "Usage: `basename $0` {dir}" >&2
+    exit 1
+fi
+
+dir="$1"
+mkdir -p $dir
+
 file=`tempfile`
 vim -S write-runtimepath.vim "$file"
-
 cat "$file" | while read rtp_path; do
     # git rev-parse --git-dir:
     #   Check if $rtp_path is git repository.
     ( \
-        cd "$rtp_path" >/dev/null 2>&1 && \
+        cd "$rtp_path" 2>/dev/null && \
         git rev-parse --git-dir >/dev/null 2>&1 && \
-        git ls-files \
+        git ls-files 2>/dev/null \
     ) | while read rtp_file; do
-        cp $rtp_path/$rtp_file $rtp_file
+        dest="$dir/$rtp_file"
+        mkdir -p "`dirname $dest`"
+        cp -R "$rtp_path/$rtp_file" "$dest"
     done
 done
