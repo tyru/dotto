@@ -54,7 +54,6 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 my $c = load_config($config_file);
-
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
 # For test, check if file exists before installing.
@@ -74,10 +73,8 @@ unless ($force_overwrite) {
 # but if path $dest exists even if $force_overwrite == 0
 # (maybe problem like race condition), exit with error.
 for my $file (@files) {
-    my ($src, $dest);
-
-    $src  = rel2abs(catfile($c->{directory}, $file));
-    $dest = catfile($home, $file);
+    my $src  = rel2abs(catfile($c->{directory}, $file));
+    my $dest = catfile($home, $file);
 
     if (-e $dest) {
         unless ($force_overwrite) {
@@ -86,6 +83,7 @@ for my $file (@files) {
         }
         rmtree($dest);
     }
+
     say("$src -> $dest") if $verbose;
     install_symlink $src, $dest, $username;
 }
