@@ -40,20 +40,7 @@ sub install {
     }
     # rcopy() preserves attributes (permission,mtime,symlink,etc.).
     rcopy($src, $dest);
-
-    my ($uid, $gid) = (getpwnam $user)[2,3];
-    die "$user not in passwd file\n" unless defined $uid;
-    if (-f $dest) {
-        chown $uid, $gid, $dest;
-    }
-    else {
-        # chown recursively.
-        File::Find::find({
-            wanted => sub {
-                chown $uid, $gid, $_;
-            },
-        }, $dest);
-    }
+    chown_user($dest, $user);
 }
 
 sub install_symlink {
@@ -76,6 +63,25 @@ sub install_symlink {
     } else {
         system('ln', '-sf', $src, $dest);
         system('chown', "$user:$user", $dest);
+    }
+}
+
+sub chown_user {
+    my ($path, $username) = @_;
+
+    my ($uid, $gid) = (getpwnam $username)[2,3];
+    die "$username not in passwd file\n" unless defined $uid;
+
+    if (-f $path) {
+        chown $uid, $gid, $path;
+    }
+    else {
+        # chown recursively.
+        File::Find::find({
+            wanted => sub {
+                chown $uid, $gid, $_;
+            },
+        }, $path);
     }
 }
 
