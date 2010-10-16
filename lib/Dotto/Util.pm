@@ -17,9 +17,7 @@ our @EXPORT_OK = qw(
     get_home_from_user
     install
     install_symlink
-    is_mswin
     load_config
-    say
 );
 
 
@@ -84,14 +82,6 @@ sub chown_user {
             },
         }, $path);
     }
-}
-
-sub is_mswin {
-    $^O =~ /\A(MSWin32|cygwin)\Z/;
-}
-
-sub say {
-    print @_, "\n" # orz
 }
 
 sub _same_file {

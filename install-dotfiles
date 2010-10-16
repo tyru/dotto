@@ -11,6 +11,7 @@ use FindBin ();
 use Pod::Usage;
 use File::Spec::Functions qw(catfile);
 use File::Basename qw(dirname);
+use Perl6::Say;
 
 use lib "$FindBin::Bin/lib";
 use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename install);
