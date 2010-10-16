@@ -30,6 +30,7 @@ my $home;
 my $username;
 my $config_file;
 my $verbose;
+my $force_overwrite = 0;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -39,6 +40,8 @@ GetOptions(
         => \$config_file,
     'v|verbose'
         => \$verbose,
+    'f|force'
+        => \$force_overwrite,
 ) or usage;
 usage if $needhelp;
 
@@ -54,10 +57,35 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 my $c = load_config($config_file);
+my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
-for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
+# For test, check if file exists before installing.
+unless ($force_overwrite) {
+    my $exists = 0;
+    for my $file (@files) {
+        my $dest = catfile($home, $file);
+        if (-e $dest) {
+            warn "install-symlinks: File exists '$dest'.\n";
+            $exists = 1;
+        }
+    }
+    exit 1 if $exists;
+}
+
+# Install dotfiles to home directory.
+# but if path $dest exists even if $force_overwrite == 0
+# (maybe problem like race condition), exit with error.
+for my $file (@files) {
     my $src  = catfile($c->{directory}, $file);
     my $dest = catfile($home, $file);
+
+    if (-e $dest) {
+        unless ($force_overwrite) {
+            # checked but file exists?
+            die "install-symlinks: File exists '$dest'.\n";
+        }
+        rmtree($dest);
+    }
 
     say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
