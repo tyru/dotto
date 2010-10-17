@@ -27,7 +27,7 @@ my $needhelp = 0;
 my $from_directory;
 my $to_directory;
 my $config_file;
-my $verbose = 0;
+my $dry_run = 0;
 my $force_overwrite = 0;
 my $username;
 GetOptions(
@@ -37,8 +37,8 @@ GetOptions(
         => \$username,
     'c|config-file=s'
         => \$config_file,
-    'v|verbose'
-        => \$verbose,
+    'dry-run'
+        => \$dry_run,
     'f|force'
         => \$force_overwrite,
     'i|from-directory=s'
@@ -98,6 +98,11 @@ for my $file (@files) {
     my $src  = catfile($from_directory, $file);
     my $dest = catfile($to_directory, $file);
 
+    if ($dry_run) {
+        say "Copy $src -> $dest";
+        next;
+    }
+
     if (-e $dest) {
         unless ($force_overwrite) {
             # checked but file exists?
@@ -106,7 +111,6 @@ for my $file (@files) {
         rmtree($dest);
     }
 
-    say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
 }
 
