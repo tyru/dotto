@@ -23,6 +23,7 @@ sub usage () {
 
 
 my $needhelp;
+my $directory;
 my $home;
 my $username;
 my $force_overwrite = 0;
@@ -40,10 +41,17 @@ GetOptions(
     'v|verbose'
         => \$verbose,
     'd|directory=s'
+        => \$directory,
+    'H|home-directory=s'
         => \$home,
 ) or usage;
 usage if $needhelp;
 
+
+unless (defined $directory) {
+    warn "error: please specify -d or --directory\n";
+    usage;
+}
 
 if (defined $home) {
     $username = get_user_from_home $home;
@@ -78,7 +86,7 @@ unless ($force_overwrite) {
 # but if path $dest exists even if $force_overwrite == 0
 # (maybe problem like race condition), exit with error.
 for my $file (@files) {
-    my $src  = rel2abs(catfile($c->{directory}, $file));
+    my $src  = rel2abs(catfile($directory, $file));
     my $dest = catfile($home, $file);
 
     if (-e $dest) {

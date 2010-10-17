@@ -99,18 +99,7 @@ sub _same_file {
 sub load_config {
     my ($config_file) = @_;
     die "$config_file:$!" unless -f $config_file;
-    my $c = YAML::LoadFile($config_file);
-    $c->{directory} = $ENV{DOTTO_DIRECTORY} if !exists $c->{directory} && exists $ENV{DOTTO_DIRECTORY};
-    _validate_prereq_config($c);
-    $c;
-}
-
-sub _validate_prereq_config {
-    my ($c) = @_;
-
-    unless (exists $c->{directory}) {
-        die "'directory' is not in config.";
-    }
+    YAML::LoadFile($config_file);
 }
 
 sub convert_filename {
