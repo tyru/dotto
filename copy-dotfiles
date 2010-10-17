@@ -109,7 +109,7 @@ for my $file (@files) {
     install($src, $dest, $username);
 }
 
-for my $file (@{$c->{removed_files}}) {
+for my $file (@{$c->{ignore_files}}) {
     my $dest = catfile($to_directory, $file);
     if (-e $dest) {
         rmtree($dest);
