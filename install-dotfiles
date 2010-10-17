@@ -39,11 +39,16 @@ GetOptions(
         => \$verbose,
     'f|force'
         => \$force_overwrite,
+    'd|directory=s'
+        => \$home,
 ) or usage;
 usage if $needhelp;
 
 
-if (defined $username) {
+if (defined $home) {
+    $username = get_user_from_home $home;
+}
+elsif (defined $username) {
     $home = get_home_from_user $username;
 }
 else {

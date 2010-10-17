@@ -27,6 +27,7 @@ my $home;
 my $username;
 my $config_file;
 my $verbose;
+my $directory;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -36,6 +37,8 @@ GetOptions(
         => \$config_file,
     'v|verbose'
         => \$verbose,
+    'd|directory=s'
+        => \$directory,
 ) or usage;
 usage if $needhelp;
 
@@ -51,6 +54,7 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 my $c = load_config($config_file);
+$c->{directory} = $directory if defined $directory;
 
 for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
     my $src  = catfile($home, $file);
