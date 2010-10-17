@@ -52,14 +52,14 @@ sub install_symlink {
     my ($src, $dest, $user) = @_;
 
     if ($^O =~ /\A(MSWin32|msys|cygwin)\Z/) {
-        die "install_symlink(): Your platform does not support symbolic link.\n";
+        die "install_symlink(): Your platform does not support symbolic link.";
     }
     if (_same_file($src, $dest)) {
         warn "Skip same file: $src, $dest\n";
         return;
     }
     if (-e $dest) {
-        die "$dest must not exists.\n";
+        die "$dest must not exists.";
     }
 
     symlink $src, $dest;
@@ -70,7 +70,7 @@ sub chown_user {
     my ($path, $username) = @_;
 
     my ($uid, $gid) = (getpwnam $username)[2,3];
-    die "$username not in passwd file\n" unless defined $uid;
+    die "$username not in passwd file" unless defined $uid;
 
     if (-f $path) {
         chown $uid, $gid, $path;
@@ -96,7 +96,7 @@ sub _same_file {
 
 sub load_config {
     my ($config_file) = @_;
-    die "$config_file:$!\n" unless -f $config_file;
+    die "$config_file:$!" unless -f $config_file;
     my $c = YAML::LoadFile($config_file);
     $c->{directory} = $ENV{DOTTO_DIRECTORY} if !exists $c->{directory} && exists $ENV{DOTTO_DIRECTORY};
     _validate_prereq_config($c);
@@ -107,7 +107,7 @@ sub _validate_prereq_config {
     my ($c) = @_;
 
     unless (exists $c->{directory}) {
-        die "'directory' is not in config.\n";
+        die "'directory' is not in config.";
     }
 }
 
