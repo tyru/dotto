@@ -63,7 +63,7 @@ unless (defined $from_directory) {
         $from_directory = $c->{from_directory};
     }
     unless (defined $from_directory) {
-        die "input directory is undefined,"
+        die "error: input directory is undefined,"
             . "please specify with -i or --from-directory\n";
     }
 }
@@ -72,7 +72,7 @@ unless (defined $to_directory) {
         $to_directory = $c->{to_directory};
     }
     unless (defined $to_directory) {
-        die "output directory is undefined,"
+        die "error: output directory is undefined,"
             . "please specify with -o or --to-directory\n";
     }
 }
@@ -84,7 +84,7 @@ unless ($force_overwrite) {
     for my $file (@files) {
         my $dest = catfile($to_directory, $file);
         if (-e $dest) {
-            warn "copy-dotfiles: File exists '$dest'.\n";
+            warn "warning: copy-dotfiles: File exists '$dest'.\n";
             $exists = 1;
         }
     }
@@ -106,7 +106,7 @@ for my $file (@files) {
     if (-e $dest) {
         unless ($force_overwrite) {
             # checked but file exists?
-            die "copy-dotfiles: File exists '$dest'.\n";
+            die "error: copy-dotfiles: File exists '$dest'.\n";
         }
         rmtree($dest);
     }
