@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     chown_user
     determine_user_and_home
     get_home_from_user
+    get_user_from_home
     install
     install_symlink
     load_config
@@ -146,6 +147,11 @@ BEGIN {
             }
             return $ENV{HOME};
         };
+        *get_user_from_home = sub {
+            my ($home) = @_;
+
+            die "get_user_from_home(): not implemented on your platform.";
+        };
     }
     else {
         *determine_user_and_home = sub {
@@ -178,6 +184,20 @@ BEGIN {
             else {
                 return "/home/$username";
             }
+        };
+        *get_user_from_home = sub {
+            my ($home) = @_;
+
+            if (canonpath($home) eq canonpath('/root')) {
+                return "root";
+            }
+            elsif (dirname($home) eq '/home') {
+                return basename $home;
+            }
+            else {
+                die "invalid home directory '$home'.";
+            }
+
         };
     }
 }
