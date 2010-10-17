@@ -22,12 +22,13 @@ sub usage () {
 }
 
 
-my $needhelp;
-my $home;
-my $username;
+my $needhelp = 0;
+my $from_directory;
+my $to_directory;
 my $config_file;
-my $verbose;
+my $verbose = 0;
 my $force_overwrite = 0;
+my $username;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -39,58 +40,80 @@ GetOptions(
         => \$verbose,
     'f|force'
         => \$force_overwrite,
-    'd|directory=s'
-        => \$home,
+    'i|from-directory=s'
+        => \$from_directory,
+    'o|to-directory=s'
+        => \$to_directory,
 ) or usage;
 usage if $needhelp;
 
 
-if (defined $home) {
-    $username = get_user_from_home $home;
-}
-elsif (defined $username) {
-    $home = get_home_from_user $username;
-}
-else {
-    ($username, $home) = determine_user_and_home;
+unless (defined $username) {
+    $username = determine_user;
 }
 
 if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 my $c = load_config($config_file);
+
+unless (defined $from_directory) {
+    if (exists $c->{from_directory}) {
+        $from_directory = $c->{from_directory};
+    }
+    unless (defined $from_directory) {
+        die "input directory is undefined,"
+            . "please specify with -i or --from-directory\n";
+    }
+}
+unless (defined $to_directory) {
+    if (exists $c->{to_directory}) {
+        $to_directory = $c->{to_directory};
+    }
+    unless (defined $to_directory) {
+        die "output directory is undefined,"
+            . "please specify with -o or --to-directory\n";
+    }
+}
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
 # For test, check if file exists before installing.
 unless ($force_overwrite) {
     my $exists = 0;
     for my $file (@files) {
-        my $dest = catfile($home, $file);
+        my $dest = catfile($to_directory, $file);
         if (-e $dest) {
-            warn "install-symlinks: File exists '$dest'.\n";
+            warn "copy-dotfiles: File exists '$dest'.\n";
             $exists = 1;
         }
     }
     exit 1 if $exists;
 }
 
-# Install dotfiles to home directory.
+# Install dotfiles to $to_directory.
 # but if path $dest exists even if $force_overwrite == 0
 # (maybe problem like race condition), exit with error.
 for my $file (@files) {
-    my $src  = catfile($c->{directory}, $file);
-    my $dest = catfile($home, $file);
+    my $src  = catfile($from_directory, $file);
+    my $dest = catfile($to_directory, $file);
 
     if (-e $dest) {
         unless ($force_overwrite) {
             # checked but file exists?
-            die "install-symlinks: File exists '$dest'.\n";
+            die "copy-dotfiles: File exists '$dest'.\n";
         }
         rmtree($dest);
     }
 
     say("$src -> $dest") if $verbose;
     install($src, $dest, $username);
+}
+
+for my $file (@{$c->{removed_files}}) {
+    my $dest = catfile($to_directory, $file);
+    if (-e $dest) {
+        rmtree($dest);
+    }
 }
 
 
@@ -100,17 +123,25 @@ __END__
 
 =head1 NAME
 
-    install-dotfiles - Install dotfiles to home directory.
+    copy-dotfiles - Copy dotfiles from directory to directory.
 
 
 =head1 SYNOPSIS
 
-    $ install-dotfiles [OPTIONS]
+    $ copy-dotfiles -i ~ -o dotfiles [OPTIONS]
 
 
 =head1 OPTIONS
 
 =over 6
+
+=item -i {directory}, --from-directory {directory}
+
+Copy dotfiles to this directory.
+
+=item -o {directory}, --to-directory {directory}
+
+Copy dotfiles from this directory.
 
 =item -h, --help
 
@@ -118,7 +149,7 @@ Show help.
 
 =item -u {user}, --username {user}
 
-Determine home directory from username.
+Owner of copied dotfiles.
 
 =item -c {config-file}, --config-file {config-file}
 
@@ -131,12 +162,6 @@ Overwrite dotfiles if they exist.
 =item -v, --verbose
 
 Output verbose messages.
-
-=item -d {dir}, --directory {dir}
-
-Directory of home directory.
-If you want to specify home directory from username,
-use C<-u> option.
 
 =back
 

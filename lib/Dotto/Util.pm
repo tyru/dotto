@@ -13,6 +13,8 @@ use File::Find qw();
 use base qw(Exporter);
 our @EXPORT_OK = qw(
     chown_user
+    determine_user
+    determine_home
     determine_user_and_home
     get_home_from_user
     get_user_from_home
@@ -123,27 +125,21 @@ sub convert_filename {
 
 BEGIN {
     if ($^O eq 'MSWin32') {
-        *determine_user_and_home = sub {
-            my ($user, $home);
-
+        *determine_user = sub {
+            unless (exists $ENV{USERNAME}) {
+                die "error: environment variable 'HOME' is not set.";
+            }
+            $ENV{USERNAME};
+        };
+        *determine_home = sub {
             unless (exists $ENV{HOME}) {
-                die "Please set environment variable 'HOME'.";
+                die "error: environment variable 'HOME' is not set.";
             }
-            unless (-d $ENV{HOME}) {
-                die "%HOME% ($ENV{HOME}) is not accessible.";
-            }
-            $home = $ENV{HOME};
-            $user = $ENV{USERNAME};
-
-            unless (-d $home) {
-                die "$home:$!"
-            }
-
-            ($user, $home);
+            $ENV{HOME};
         };
         *get_home_from_user = sub {
             unless (exists $ENV{HOME}) {
-                die "Please set environment variable 'HOME'.";
+                die "error: environment variable 'HOME' is not set.";
             }
             return $ENV{HOME};
         };
@@ -154,26 +150,25 @@ BEGIN {
         };
     }
     else {
-        *determine_user_and_home = sub {
-            my ($user, $home);
-
+        *determine_user = sub {
             unless (exists $ENV{USER}) {
-                die "Please set environment variable 'USER'.";
+                die "error: environment variable 'USER' is not set.";
             }
-            $user = $ENV{USER};
+            $ENV{USER};
+        };
+        *determine_home = sub {
+            my $user = determine_user();
 
+            my $home;
             if ($user eq 'root') {
                 $home = "/root";
             }
             else {
-                $home = "/home/$user";
+                $home = catfile("/home", $user);
             }
+            die "$home:$!" unless -d $home;
 
-            unless (-d $home) {
-                die "$home:$!"
-            }
-
-            ($user, $home);
+            $home;
         };
         *get_home_from_user = sub {
             my ($username) = @_;
@@ -200,6 +195,10 @@ BEGIN {
 
         };
     }
+}
+
+sub determine_user_and_home {
+    (determine_user(), determine_home());
 }
 
 
