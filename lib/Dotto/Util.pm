@@ -182,7 +182,7 @@ BEGIN {
                 return "/root";
             }
             else {
-                return "/home/$username";
+                return catfile("/home", $username);
             }
         };
         *get_user_from_home = sub {
