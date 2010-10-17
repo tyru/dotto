@@ -96,13 +96,44 @@ __END__
 
 =head1 NAME
 
-    install-symlinks - NO DESCRIPTION YET.
+    install-symlinks - Install symlinks to home directory.
 
 
 =head1 SYNOPSIS
 
+    $ install-symlinks [OPTIONS]
 
 =head1 OPTIONS
+
+=over 6
+
+=item -h, --help
+
+Show help.
+
+=item -u {user}, --username {user}
+
+Determine home directory from username.
+
+=item -c {config-file}, --config-file {config-file}
+
+Config file path to get dotfiles list.
+
+=item -f, --force
+
+Overwrite dotfiles with symlinks if they exist.
+
+=item -v, --verbose
+
+Output verbose messages.
+
+=item -d {dir}, --directory {dir}
+
+Directory of home directory.
+If you want to specify home directory from username,
+use C<-u> option.
+
+=back
 
 
 =head1 AUTHOR

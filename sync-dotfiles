@@ -70,3 +70,50 @@ for my $f (@{$c->{removed_files}}) {
         rmtree($f);
     }
 }
+
+
+
+__END__
+
+=head1 NAME
+
+    sync-dotfiles - Copy dotfiles to specified directory.
+
+
+=head1 SYNOPSIS
+
+    $ sync-dotfiles [OPTIONS]
+
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h, --help
+
+Show help.
+
+=item -u {user}, --username {user}
+
+Determine home directory from username.
+
+=item -c {config-file}, --config-file {config-file}
+
+Config file path to get dotfiles list.
+
+=item -v, --verbose
+
+Output verbose messages.
+
+=item -d {dir}, --directory {dir}
+
+Directory of home directory.
+If you want to specify home directory from username,
+use C<-u> option.
+
+=back
+
+
+=head1 AUTHOR
+
+tyru <tyru.exe@gmail.com>

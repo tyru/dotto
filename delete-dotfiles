@@ -69,3 +69,54 @@ for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
     rmtree($file);
     print "done.\n" if $verbose;
 }
+
+
+
+__END__
+
+=head1 NAME
+
+    delete-dotfiles - Delete dotfiles.
+
+
+=head1 SYNOPSIS
+
+    $ delete-dotfiles [OPTIONS]
+
+
+=head1 OPTIONS
+
+=over 6
+
+=item -h, --help
+
+Show help.
+
+=item -u {user}, --username {user}
+
+Determine home directory from username.
+
+=item -c {config-file}, --config-file {config-file}
+
+Config file path to get dotfiles list.
+
+=item -f, --force
+
+Do delete actually.
+
+=item -v, --verbose
+
+Output verbose messages.
+
+=item -d {dir}, --directory {dir}
+
+Directory of home directory.
+If you want to specify home directory from username,
+use C<-u> option.
+
+=back
+
+
+=head1 AUTHOR
+
+tyru <tyru.exe@gmail.com>
