@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 use YAML ();
-use File::Path qw(rmtree mkpath);
+use File::Path qw(mkpath);
 use File::Basename qw(dirname);
 use File::Spec::Functions qw(canonpath);
 use File::Copy::Recursive qw(rcopy);
@@ -38,9 +38,9 @@ sub install {
         warn "$src:$!\n";
         return;
     }
-    # Delete destination
-    # TODO: Use rsync?
-    rmtree($dest);
+    if (-e $dest) {
+        die "install(): destination path must not exists.";
+    }
 
     unless (-d (my $dir = dirname($dest))) {
         mkpath $dir or die "$dir: $!";
