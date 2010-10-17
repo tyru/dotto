@@ -17,7 +17,7 @@ use File::Copy::Recursive qw(rcopy);
 
 ### sub ###
 sub usage () {
-    pod2usage(-verbose => 2);
+    pod2usage(-verbose => 1);
 }
 
 sub tempfile {

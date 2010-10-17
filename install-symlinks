@@ -18,7 +18,7 @@ use Dotto::Util qw(get_home_from_user determine_user_and_home load_config conver
 
 
 sub usage () {
-    pod2usage(-verbose => 2);
+    pod2usage(-verbose => 1);
 }
 
 
