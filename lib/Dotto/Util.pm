@@ -74,6 +74,8 @@ sub install_symlink {
 sub chown_user {
     my ($path, $username) = @_;
 
+    return if $^O eq 'MSWin32';
+
     my ($uid, $gid) = (getpwnam $username)[2,3];
     die "$username not in passwd file" unless defined $uid;
 
