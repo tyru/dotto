@@ -76,12 +76,12 @@ unless (defined $to_directory) {
             . "please specify with -o or --to-directory\n";
     }
 }
-my @files = map { convert_filename $c, $_ } @{$c->{files}};
+my @files = @{$c->{files}};
 
 # For test, check if file exists before installing.
 unless ($force_overwrite) {
     my $exists = 0;
-    for my $file (@files) {
+    for my $file (map { convert_filename $c, $_ } @files) {
         my $dest = catfile($to_directory, $file);
         if (-e $dest) {
             warn "warning: copy-dotfiles: File exists '$dest'.\n";
@@ -96,7 +96,7 @@ unless ($force_overwrite) {
 # (maybe problem like race condition), exit with error.
 for my $file (@files) {
     my $src  = catfile($from_directory, $file);
-    my $dest = catfile($to_directory, $file);
+    my $dest = catfile($to_directory, convert_filename $c, $file);
 
     if ($dry_run) {
         say "Copy $src -> $dest";
@@ -115,7 +115,7 @@ for my $file (@files) {
 }
 
 for my $file (@{$c->{ignore_files}}) {
-    my $dest = catfile($to_directory, $file);
+    my $dest = catfile($to_directory, convert_filename $c, $file);
     if (-e $dest) {
         rmtree($dest);
     }
