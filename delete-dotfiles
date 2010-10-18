@@ -27,6 +27,7 @@ my $username;
 my $config_file;
 my $force = 0;
 my $verbose = 0;
+my $convert_filename = 0;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -40,6 +41,8 @@ GetOptions(
         => \$verbose,
     'd|directory=s'
         => \$home,
+    'O|os-files'
+        => \$convert_filename,
 ) or usage;
 usage if $needhelp;
 unless ($force) {
@@ -63,7 +66,11 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
 }
 my $c = load_config($config_file);
 
-for my $file (map { convert_filename $c, $_ } @{$c->{files}}) {
+my @files = @{$c->{files}};
+if ($convert_filename) {
+    @files = map { convert_filename $c, $_ } @files;
+}
+for my $file (@files) {
     $file  = catfile($home, $file);
     print "Deleting $file..." if $verbose;
     rmtree($file);
