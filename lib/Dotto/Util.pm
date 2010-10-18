@@ -60,6 +60,9 @@ sub install_symlink {
         warn "Skip same file: $src, $dest\n";
         return;
     }
+    if (not -e $src) {
+        die "$src must exists.";
+    }
     if (-e $dest) {
         die "$dest must not exists.";
     }
