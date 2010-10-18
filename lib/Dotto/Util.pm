@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
     get_user_from_home
     install
     install_symlink
+    supported_symlink
     load_config
 );
 
@@ -69,6 +70,12 @@ sub install_symlink {
 
     symlink $src, $dest;
     chown_user($dest, $user);
+}
+
+sub supported_symlink {
+    # XXX: Windows after Vista supports symlink?
+    # XXX: cygwin supports symlink?
+    $^O !~ /\A(MSWin32|msys|cygwin)\Z/
 }
 
 sub chown_user {

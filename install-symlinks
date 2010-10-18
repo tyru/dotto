@@ -14,7 +14,7 @@ use Perl6::Say;
 
 use FindBin ();
 use lib "$FindBin::Bin/lib";
-use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename install_symlink);
+use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename install_symlink supported_symlink);
 
 
 sub usage () {
@@ -48,6 +48,9 @@ GetOptions(
 usage if $needhelp;
 
 
+unless (supported_symlink()) {
+    die "error: your platform does not support symbolic link.\n";
+}
 unless (defined $directory) {
     warn "error: please specify -d or --directory\n";
     usage;
