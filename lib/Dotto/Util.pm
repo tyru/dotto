@@ -6,7 +6,7 @@ use utf8;
 use YAML ();
 use File::Path qw(mkpath);
 use File::Basename qw(dirname);
-use File::Spec::Functions qw(canonpath file_name_is_absolute);
+use File::Spec::Functions qw(catfile canonpath file_name_is_absolute);
 use File::Copy::Recursive qw(rcopy);
 use File::Find qw();
 
