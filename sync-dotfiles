@@ -146,17 +146,17 @@ __END__
 
 =head1 OPTIONS
 
-=over 7
+=over 8
 
 =item -h, --help
 
 Show help.
 
-=item -u {user}, --username {user}
+=item -u, --username {user}
 
 Owner of copied dotfiles.
 
-=item -c {config-file}, --config-file {config-file}
+=item -c, --config-file {config-file}
 
 Config file path to get dotfiles list.
 
@@ -164,9 +164,25 @@ Config file path to get dotfiles list.
 
 Overwrite dotfiles if they exist.
 
-=item -v, --verbose
+=item --dry-run
 
-Output verbose messages.
+Output verbose messages and do nothing.
+
+=item -x, --extract
+
+Copy dotfiles from C<--directory> to home directory.
+if this is not given,
+Copy dotfiles from home directory to C<--directory>.
+
+=item -d, --directory {directory}
+
+Directory which contains dotfiles (not home directory).
+
+=item -H, --home-directory {directory}
+
+Directory of home directory.
+If you want to specify home directory from username,
+use C<-u> option.
 
 =back
 
