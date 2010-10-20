@@ -28,7 +28,9 @@ our @EXPORT_OK = qw(
 
 sub install {
     # install $src to $dest as $user.
-    my ($src, $dest, $user) = @_;
+    my ($src, $dest, $user, $opt) = @_;
+    $opt ||= {};
+    %$opt = (dereference => 0, %$opt);    # default options
 
     if (_same_file($src, $dest)) {
         warn "Skip same file: $src, $dest\n";
@@ -47,6 +49,7 @@ sub install {
         mkpath $dir or die "$dir: $!";
     }
     # rcopy() preserves attributes (permission,mtime,symlink,etc.).
+    local $File::Copy::Recursive::CopyLink = not $opt->{dereference};
     rcopy($src, $dest);
     chown_user($dest, $user);
 }

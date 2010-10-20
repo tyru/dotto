@@ -31,6 +31,7 @@ my $force_overwrite = 0;
 my $username;
 my $directory;
 my $extract = 0;
+my $dereference = 0;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -48,6 +49,8 @@ GetOptions(
         => \$directory,
     'H|home-directory=s'
         => \$home,
+    'L|dereference'
+        => \$dereference,
 ) or usage;
 usage if $needhelp;
 
@@ -122,7 +125,7 @@ for my $file (@files) {
         rmtree($dest);
     }
 
-    install($src, $dest, $username);
+    install($src, $dest, $username, {dereference => $dereference});
 }
 
 unless ($extract) {
@@ -152,7 +155,7 @@ __END__
 
 =head1 OPTIONS
 
-=over 8
+=over 9
 
 =item -h, --help
 
@@ -189,6 +192,10 @@ Directory which contains dotfiles (not home directory).
 Directory of home directory.
 If you want to specify home directory from username,
 use C<-u> option.
+
+=item -L, --dereference
+
+Dereference symlinks if given.
 
 =back
 
