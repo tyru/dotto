@@ -51,10 +51,6 @@ usage if $needhelp;
 unless (supported_symlink()) {
     die "error: your platform does not support symbolic link.\n";
 }
-unless (defined $directory) {
-    warn "error: please specify -d or --directory\n";
-    usage;
-}
 
 if (defined $home) {
     $username = get_user_from_home $home;
@@ -71,6 +67,14 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
 }
 my $c = load_config($config_file);
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
+
+if (!defined $directory && exists $c->{directory}) {
+    $directory = $c->{directory};
+}
+unless (defined $directory) {
+    warn "error: directory is undefined: please specify with -d {directory}\n";
+    usage;
+}
 
 # For test, check if file exists before installing.
 unless ($force_overwrite) {
