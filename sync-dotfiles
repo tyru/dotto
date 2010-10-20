@@ -80,7 +80,13 @@ unless (defined $directory) {
 unless ($force_overwrite) {
     my $exists = 0;
     for my $file (map { convert_filename $c, $_ } @files) {
-        my $dest = catfile($home, $file);
+        my $dest;
+        if ($extract) {
+            $dest = catfile($home, convert_filename $c, $file);
+        }
+        else {
+            $dest = catfile($directory, $file);
+        }
         if (-e $dest) {
             warn "warning: sync-dotfiles: File exists '$dest'.\n";
             $exists = 1;
