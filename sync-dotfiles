@@ -15,7 +15,7 @@ use Perl6::Say;
 use File::Path qw(rmtree);
 
 use lib "$FindBin::Bin/lib";
-use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename install);
+use Dotto::Util qw(get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install);
 
 
 sub usage () {
@@ -24,12 +24,13 @@ sub usage () {
 
 
 my $needhelp = 0;
-my $from_directory;
-my $to_directory;
+my $home;
 my $config_file;
 my $dry_run = 0;
 my $force_overwrite = 0;
 my $username;
+my $directory;
+my $extract = 0;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -41,62 +42,66 @@ GetOptions(
         => \$dry_run,
     'f|force'
         => \$force_overwrite,
-    'i|from-directory=s'
-        => \$from_directory,
-    'o|to-directory=s'
-        => \$to_directory,
+    'x|extract'
+        => \$extract,
+    'd|directory=s'
+        => \$directory,
+    'H|home-directory=s'
+        => \$home,
 ) or usage;
 usage if $needhelp;
 
 
-unless (defined $username) {
-    $username = determine_user;
+if (defined $home) {
+    $username = get_user_from_home $home;
+}
+elsif (defined $username) {
+    $home = get_home_from_user $username;
+}
+else {
+    ($username, $home) = determine_user_and_home;
 }
 
 if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 my $c = load_config($config_file);
-
-unless (defined $from_directory) {
-    if (exists $c->{from_directory}) {
-        $from_directory = $c->{from_directory};
-    }
-    unless (defined $from_directory) {
-        die "error: input directory is undefined,"
-            . "please specify with -i or --from-directory\n";
-    }
-}
-unless (defined $to_directory) {
-    if (exists $c->{to_directory}) {
-        $to_directory = $c->{to_directory};
-    }
-    unless (defined $to_directory) {
-        die "error: output directory is undefined,"
-            . "please specify with -o or --to-directory\n";
-    }
-}
 my @files = @{$c->{files}};
+
+if (!defined $directory && exists $c->{directory}) {
+    $directory = $c->{directory};
+}
+unless (defined $directory) {
+    warn "error: directory is undefined: please specify with -d {directory}\n";
+    usage;
+}
 
 # For test, check if file exists before installing.
 unless ($force_overwrite) {
     my $exists = 0;
     for my $file (map { convert_filename $c, $_ } @files) {
-        my $dest = catfile($to_directory, $file);
+        my $dest = catfile($home, $file);
         if (-e $dest) {
-            warn "warning: copy-dotfiles: File exists '$dest'.\n";
+            warn "warning: sync-dotfiles: File exists '$dest'.\n";
             $exists = 1;
         }
     }
     exit 1 if $exists;
 }
 
-# Install dotfiles to $to_directory.
+# Install dotfiles to $home.
 # but if path $dest exists even if $force_overwrite == 0
 # (maybe problem like race condition), exit with error.
 for my $file (@files) {
-    my $src  = catfile($from_directory, $file);
-    my $dest = catfile($to_directory, convert_filename $c, $file);
+    my ($src, $dest);
+    if ($extract) {
+        $src  = catfile($directory, $file);
+        $dest = catfile($home, convert_filename $c, $file);
+    }
+    else {
+        $src  = catfile($home, $file);
+        $dest = catfile($directory, $file);
+    }
 
     if ($dry_run) {
         say "Copy $src -> $dest";
@@ -106,7 +111,7 @@ for my $file (@files) {
     if (-e $dest) {
         unless ($force_overwrite) {
             # checked but file exists?
-            die "error: copy-dotfiles: File exists '$dest'.\n";
+            die "error: sync-dotfiles: File exists '$dest'.\n";
         }
         rmtree($dest);
     }
@@ -114,10 +119,12 @@ for my $file (@files) {
     install($src, $dest, $username);
 }
 
-for my $file (@{$c->{ignore_files}}) {
-    my $dest = catfile($to_directory, convert_filename $c, $file);
-    if (-e $dest) {
-        rmtree($dest);
+unless ($extract) {
+    for my $file (@{$c->{ignore_files}}) {
+        my $dest = catfile($directory, convert_filename $c, $file);
+        if (-e $dest) {
+            rmtree($dest);
+        }
     }
 }
 
@@ -128,26 +135,18 @@ __END__
 
 =head1 NAME
 
-    copy-dotfiles - Copy dotfiles from directory to directory.
+    sync-dotfiles - Copy dotfiles from directory to directory.
 
 
 =head1 SYNOPSIS
 
-    $ copy-dotfiles -i ~ -o dotfiles [OPTIONS]
-    $ copy-dotfiles -i dotfiles -o ~ [OPTIONS]
+    $ sync-dotfiles [OPTIONS]
+    $ sync-dotfiles -x [OPTIONS]
 
 
 =head1 OPTIONS
 
 =over 7
-
-=item -i {directory}, --from-directory {directory}
-
-Copy dotfiles to this directory.
-
-=item -o {directory}, --to-directory {directory}
-
-Copy dotfiles from this directory.
 
 =item -h, --help
 

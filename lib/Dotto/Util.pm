@@ -6,7 +6,7 @@ use utf8;
 use YAML ();
 use File::Path qw(mkpath);
 use File::Basename qw(dirname);
-use File::Spec::Functions qw(canonpath);
+use File::Spec::Functions qw(canonpath file_name_is_absolute);
 use File::Copy::Recursive qw(rcopy);
 use File::Find qw();
 
@@ -112,7 +112,20 @@ sub _same_file {
 sub load_config {
     my ($config_file) = @_;
     die "$config_file:$!" unless -f $config_file;
-    YAML::LoadFile($config_file);
+    my $c = YAML::LoadFile($config_file);
+    _fix_config($c, $config_file);
+}
+
+sub _fix_config {
+    my ($c, $config_file) = @_;
+
+    return $c unless exists $c->{directory};
+    unless (file_name_is_absolute $c->{directory}) {
+        # Assume the path is from $config_file's dirname.
+        $c->{directory} = catfile dirname($config_file), $c->{directory};
+    }
+
+    $c;
 }
 
 sub convert_filename {
