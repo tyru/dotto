@@ -27,6 +27,7 @@ my $needhelp = 0;
 my $home;
 my $config_file;
 my $dry_run = 0;
+my $verbose = 0;
 my $force_overwrite = 0;
 my $username;
 my $directory;
@@ -41,6 +42,8 @@ GetOptions(
         => \$config_file,
     'dry-run'
         => \$dry_run,
+    'v|verbose'
+        => \$verbose,
     'f|force'
         => \$force_overwrite,
     'x|extract'
@@ -94,9 +97,9 @@ for my $file (@files) {
         $dest = catfile($directory, $file);
     }
 
-    if ($dry_run) {
+    if ($dry_run || $verbose) {
         say "Copy $src -> $dest";
-        next;
+        next if $dry_run;
     }
 
     if (-e $dest) {
@@ -137,7 +140,7 @@ __END__
 
 =head1 OPTIONS
 
-=over 9
+=over 10
 
 =item -h, --help
 
@@ -158,6 +161,10 @@ Overwrite dotfiles if they exist.
 =item --dry-run
 
 Output verbose messages and do nothing.
+
+=item -v, --verbose
+
+Output verbose messages and do normal operations.
 
 =item -x, --extract
 
