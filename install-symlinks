@@ -79,22 +79,7 @@ unless (defined $directory) {
     usage;
 }
 
-# For test, check if file exists before installing.
-unless ($force_overwrite) {
-    my $exists = 0;
-    for my $file (@files) {
-        my $dest = catfile($home, $file);
-        if (-e $dest) {
-            warn "install-symlinks: File exists '$dest'.\n";
-            $exists = 1;
-        }
-    }
-    exit 1 if $exists;
-}
-
 # Install symbolic links.
-# but if path $dest exists even if $force_overwrite == 0
-# (maybe problem like race condition), exit with error.
 for my $file (@files) {
     my $src  = rel2abs(catfile($directory, $file));
     my $dest = catfile($home, $file);
@@ -102,7 +87,8 @@ for my $file (@files) {
     if (-e $dest) {
         unless ($force_overwrite) {
             # checked but file exists?
-            die "install-symlinks: File exists '$dest'.\n";
+            warn "warning: install-symlinks: File exists '$dest'.\n";
+            next;
         }
         rmtree($dest);
     }
