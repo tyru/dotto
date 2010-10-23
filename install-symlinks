@@ -86,7 +86,6 @@ for my $file (@files) {
 
     if (-e $dest) {
         unless ($force_overwrite) {
-            # checked but file exists?
             warn "warning: install-symlinks: File exists '$dest'.\n";
             next;
         }
