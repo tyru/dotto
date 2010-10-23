@@ -65,6 +65,9 @@ else {
 if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
+unless (defined $config_file) {
+    die "Specify config file with -c option.\n";
+}
 my $c = load_config($config_file);
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
