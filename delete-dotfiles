@@ -65,7 +65,7 @@ if (!defined $config_file && exists $ENV{DOTTORC}) {
     $config_file = $ENV{DOTTORC};
 }
 unless (defined $config_file) {
-    die "Specify config file with -c option.\n";
+    die "error: specify config file with -c option.\n";
 }
 my $c = load_config($config_file);
 
