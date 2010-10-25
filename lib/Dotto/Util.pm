@@ -150,6 +150,10 @@ sub get_home_from_user {
     File::HomeDir->users_home(shift)
 }
 
+sub determine_user_and_home {
+    (determine_user(), determine_home());
+}
+
 sub determine_user {
     if ($^O eq 'MSWin32') {
         unless (exists $ENV{USERNAME}) {
@@ -183,10 +187,6 @@ sub get_user_from_home {
         }
         undef;
     }
-}
-
-sub determine_user_and_home {
-    (determine_user(), determine_home());
 }
 
 
