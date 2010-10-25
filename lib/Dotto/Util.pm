@@ -118,7 +118,18 @@ sub _same_file {
 sub load_config {
     my ($config_file) = @_;
     die "$config_file:$!" unless -f $config_file;
-    my $c = YAML::LoadFile($config_file);
+
+    my $c;
+    if ($config_file =~ /\.pl$/i) {
+        $c = do $config_file;
+    }
+    elsif ($config_file =~ /\.ya?ml$/i) {
+        $c = YAML::LoadFile($config_file);
+    }
+    else {
+        die "error: '$config_file' has invalid extension: "
+            . "only allowed .pl, .yaml, .yml\n";
+    }
     _fix_config($c, $config_file);
 }
 
