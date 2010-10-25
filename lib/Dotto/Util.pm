@@ -30,8 +30,10 @@ our @EXPORT_OK = qw(
 sub install {
     # install $src to $dest as $user.
     my ($src, $dest, $user, $opt) = @_;
+
+    # Merge %$opt with default options (if defined).
     $opt ||= {};
-    %$opt = (dereference => 0, %$opt);    # default options
+    %$opt = (dereference => 0, %$opt);
 
     if (_same_file($src, $dest)) {
         warn "Skip same file: $src, $dest\n";
