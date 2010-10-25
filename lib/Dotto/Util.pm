@@ -9,6 +9,7 @@ use File::Basename qw(dirname);
 use File::Spec::Functions qw(catfile canonpath file_name_is_absolute);
 use File::Copy::Recursive qw(rcopy);
 use File::Find qw();
+use File::HomeDir ();
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(
@@ -141,6 +142,14 @@ sub convert_filename {
     }
 }
 
+sub determine_home {
+    File::HomeDir->my_home
+}
+
+sub get_home_from_user {
+    File::HomeDir->users_home(shift)
+}
+
 BEGIN {
     if ($^O eq 'MSWin32') {
         *determine_user = sub {
@@ -149,23 +158,7 @@ BEGIN {
             }
             $ENV{USERNAME};
         };
-        *determine_home = sub {
-            unless (exists $ENV{HOME}) {
-                die "error: environment variable 'HOME' is not set.";
-            }
-            $ENV{HOME};
-        };
-        *get_home_from_user = sub {
-            unless (exists $ENV{HOME}) {
-                die "error: environment variable 'HOME' is not set.";
-            }
-            return $ENV{HOME};
-        };
-        *get_user_from_home = sub {
-            my ($home) = @_;
-
-            die "get_user_from_home(): not implemented on your platform.";
-        };
+        *get_user_from_home = sub { undef };
     }
     else {
         *determine_user = sub {
@@ -174,43 +167,19 @@ BEGIN {
             }
             $ENV{USER};
         };
-        *determine_home = sub {
-            my $user = determine_user();
-
-            my $home;
-            if ($user eq 'root') {
-                $home = "/root";
-            }
-            else {
-                $home = catfile("/home", $user);
-            }
-            die "$home:$!" unless -d $home;
-
-            $home;
-        };
-        *get_home_from_user = sub {
-            my ($username) = @_;
-
-            if ($username eq 'root') {
-                return "/root";
-            }
-            else {
-                return catfile("/home", $username);
-            }
-        };
         *get_user_from_home = sub {
             my ($home) = @_;
 
-            if (canonpath($home) eq canonpath('/root')) {
+            if (canonpath($home) eq '/root') {
                 return "root";
             }
             elsif (dirname($home) eq '/home') {
                 return basename $home;
             }
             else {
-                die "invalid home directory '$home'.";
+                warn "error: invalid home directory '$home'.";
             }
-
+            undef;
         };
     }
 }

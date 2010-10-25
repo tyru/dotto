@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
         'Perl6::Say' => 0,
         'Perl6::Slurp' => 0,
         'File::Copy::Recursive' => 0,
+        'File::HomeDir' => 0,
         'YAML' => 0,
     },
 );

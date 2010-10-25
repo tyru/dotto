@@ -60,6 +60,10 @@ usage if $needhelp;
 
 if (defined $home) {
     $username = get_user_from_home $home;
+    unless (defined $username) {
+        die "error: can't determine username "
+            . "from home directory on your platform.";
+    }
 }
 elsif (defined $username) {
     $home = get_home_from_user $username;
