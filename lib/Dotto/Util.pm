@@ -150,37 +150,38 @@ sub get_home_from_user {
     File::HomeDir->users_home(shift)
 }
 
-BEGIN {
+sub determine_user {
     if ($^O eq 'MSWin32') {
-        *determine_user = sub {
-            unless (exists $ENV{USERNAME}) {
-                die "error: environment variable 'HOME' is not set.";
-            }
-            $ENV{USERNAME};
-        };
-        *get_user_from_home = sub { undef };
+        unless (exists $ENV{USERNAME}) {
+            die "error: environment variable 'HOME' is not set.";
+        }
+        $ENV{USERNAME};
     }
     else {
-        *determine_user = sub {
-            unless (exists $ENV{USER}) {
-                die "error: environment variable 'USER' is not set.";
-            }
-            $ENV{USER};
-        };
-        *get_user_from_home = sub {
-            my ($home) = @_;
+        unless (exists $ENV{USER}) {
+            die "error: environment variable 'USER' is not set.";
+        }
+        $ENV{USER};
+    }
+}
 
-            if (canonpath($home) eq '/root') {
-                return "root";
-            }
-            elsif (dirname($home) eq '/home') {
-                return basename $home;
-            }
-            else {
-                warn "error: invalid home directory '$home'.";
-            }
-            undef;
-        };
+sub get_user_from_home {
+    if ($^O eq 'MSWin32') {
+        undef;
+    }
+    else {
+        my ($home) = @_;
+
+        if (canonpath($home) eq '/root') {
+            return "root";
+        }
+        elsif (dirname($home) eq '/home') {
+            return basename $home;
+        }
+        else {
+            warn "error: invalid home directory '$home'.";
+        }
+        undef;
     }
 }
 
