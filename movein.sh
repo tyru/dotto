@@ -1,12 +1,10 @@
 #!/bin/sh
 # Original script is from oreilly book "Linuxサーバ Hacks" (Linux Server Hacks)
 
-# TODO
-# - install as given user
 
-
+# Fill in for default value.
 server=''
-movein_dir="send_config"
+movein_dir=''
 
 die () {
     echo "$*" >&2
@@ -14,8 +12,7 @@ die () {
 }
 
 usage () {
-    echo "Usage: `basename $0` hostname"
-    exit 1
+    die "Usage: `basename $0` {hostname} [{dir}]"
 }
 
 
@@ -31,6 +28,7 @@ case $# in
         ;;
 esac
 
-cd "`dirname $0`" || die "failed to chdir: $!"
-cd "$movein_dir" || die "failed to chdir: $!"
-tar zhcf - . | ssh "$server" "tar zpvxf -"
+if [ -z "$server" -o -z "$movein_dir" ]; then
+    usage
+fi
+cd "$movein_dir" && tar zhcf - . | ssh "$server" "tar zpvxf -"
