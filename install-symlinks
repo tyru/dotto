@@ -14,7 +14,7 @@ use Perl6::Say;
 
 use FindBin ();
 use lib "$FindBin::Bin/lib";
-use Dotto::Util qw(get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install_symlink supported_symlink);
+use Dotto::Util qw(get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install_symlink supported_symlink hashize_arg_config);
 
 
 sub usage () {
@@ -29,6 +29,7 @@ my $username;
 my $force_overwrite = 0;
 my $verbose = 0;
 my $config_file;
+my @arg_config;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -44,6 +45,8 @@ GetOptions(
         => \$directory,
     'H|home-directory=s'
         => \$home,
+    'C=s'
+        => \@arg_config,
 ) or usage;
 usage if $needhelp;
 
@@ -73,6 +76,9 @@ unless (defined $config_file) {
     die "error: specify config file with -c option.\n";
 }
 my $c = load_config($config_file);
+if (@arg_config) {
+    %$c = (%$c, %{hashize_arg_config @arg_config});
+}
 my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
 if (!defined $directory && exists $c->{directory}) {

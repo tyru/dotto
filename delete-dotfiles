@@ -13,7 +13,7 @@ use File::Spec::Functions qw(catfile);
 
 use FindBin ();
 use lib "$FindBin::Bin/lib";
-use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename);
+use Dotto::Util qw(get_home_from_user determine_user_and_home load_config convert_filename hashize_arg_config);
 
 
 sub usage () {
@@ -28,6 +28,7 @@ my $config_file;
 my $force = 0;
 my $verbose = 0;
 my $convert_filename = 0;
+my @arg_config;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -43,6 +44,8 @@ GetOptions(
         => \$home,
     'O|os-files'
         => \$convert_filename,
+    'C=s'
+        => \@arg_config,
 ) or usage;
 usage if $needhelp;
 unless ($force) {
@@ -68,6 +71,9 @@ unless (defined $config_file) {
     die "error: specify config file with -c option.\n";
 }
 my $c = load_config($config_file);
+if (@arg_config) {
+    %$c = (%$c, %{hashize_arg_config @arg_config});
+}
 
 my @files = @{$c->{files}};
 if ($convert_filename) {

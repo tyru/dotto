@@ -15,7 +15,7 @@ use Perl6::Say;
 use File::Path qw(rmtree);
 
 use lib "$FindBin::Bin/lib";
-use Dotto::Util qw(get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install);
+use Dotto::Util qw(get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install hashize_arg_config);
 
 
 sub usage () {
@@ -33,6 +33,7 @@ my $username;
 my $directory;
 my $extract = 0;
 my $dereference = 0;
+my @arg_config;
 GetOptions(
     'h|help'
         => \$needhelp,
@@ -54,6 +55,8 @@ GetOptions(
         => \$home,
     'L|dereference'
         => \$dereference,
+    'C=s'
+        => \@arg_config,
 ) or usage;
 usage if $needhelp;
 
@@ -79,6 +82,9 @@ unless (defined $config_file) {
     die "error: specify config file with -c option.\n";
 }
 my $c = load_config($config_file);
+if (@arg_config) {
+    %$c = (%$c, %{hashize_arg_config @arg_config});
+}
 my @files = @{$c->{files}};
 
 if (!defined $directory && exists $c->{directory}) {

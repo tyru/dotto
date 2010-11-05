@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(
     install_symlink
     supported_symlink
     load_config
+    hashize_arg_config
 );
 
 
@@ -143,6 +144,16 @@ sub _fix_config {
     }
 
     $c;
+}
+
+sub hashize_arg_config {
+    my %h;
+    for (@_) {
+        if (/\A([^=]+)=([^=]+)\Z/) {
+            $h{$1} = $2;
+        }
+    }
+    \%h;
 }
 
 sub convert_filename {
