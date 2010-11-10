@@ -32,7 +32,7 @@ sub run {
             },
         },
     );
-    $ARGPARSER->invoke({fallback => 'help'});
+    $ARGPARSER->invoke_command(fallback => 'help');
 }
 
 sub command_delete {
