@@ -5,6 +5,7 @@ use utf8;
 use Carp;
 use Getopt::SubCommand;
 use File::Basename qw/basename/;
+use Perl6::Say;
 
 our $VERSION = eval '0.001';
 my $ARGPARSER;
@@ -30,6 +31,10 @@ sub run {
                 },
                 usage => 'Delete dotfiles.',
             },
+            version => {
+                sub => \&command_version,
+                usage => 'Show version',
+            },
         },
     );
     $ARGPARSER->invoke_command(fallback => 'help');
@@ -40,6 +45,9 @@ sub command_delete {
     # TODO
 }
 
+sub command_version {
+    say "v$VERSION";
+}
 
 
 
