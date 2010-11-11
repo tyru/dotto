@@ -56,11 +56,69 @@ __END__
 
 =head1 NAME
 
-    App::Dotto - NO DESCRIPTION YET.
+    App::Dotto - dotfiles utilities
 
 
 =head1 SYNOPSIS
 
+    $ dotto copy          # Copy dotfiles to specified directory in config file.
+    $ dotto copy    -f    # Same as above but overwrite if the file exists.
+                          # (PLEASE CAREFULLY DO THIS!)
+    $ dotto copy -s       # Copy dotfiles' symlinks.
+    $ dotto copy -s -f    # Same as above but overwrite if the file exists.
+                          # (PLEASE CAREFULLY DO THIS!)
+    $ dotto install       # Install dotfiles to $HOME directory.
+    $ dotto install    -f # Same as above but overwrite if the file exists.
+                          # (PLEASE CAREFULLY DO THIS!)
+    $ dotto install -s    # Install dotfiles' symlinks to $HOME directory.
+    $ dotto install -s -f # Same as above but overwrite if the file exists.
+                          # (PLEASE CAREFULLY DO THIS!)
+    $ dotto delete -f     # Delete all dotfiles (PLEASE CAREFULLY DO THIS!).
+    $ dotto help          # Show this help text.
+    $ dotto help copy     # Show the help text of "copy".
 
-=head1 OPTIONS
+=head1 GLOBAL OPTIONS
 
+=over
+
+=item -h, --help
+
+=item -v, --version
+
+=item -c, --config-file {file}
+
+=item -C attr=value
+
+Modify misc. values from arguments, not from config file.
+
+=back
+
+=head1 COMMANDS
+
+=over
+
+=item install [-s|--symbolic] [-f|--force]
+
+Copy dotfiles to .
+if -s option was given, install symlinks.
+If -f option was given, overwrite if file exists.
+
+=item delete [-f|--force]
+
+Delete all dotfiles in home directory.
+You must specify -f option for safety.
+
+=item help [-v|--verbose]
+
+Show the summary of dotto.
+It means showing this help text as you see.
+
+=item help [-v|--verbose] COMMAND
+
+Show the help text of specified command.
+
+=item version
+
+Show the version of dotto.
+
+=back
