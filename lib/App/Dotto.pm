@@ -6,6 +6,10 @@ use Carp;
 use Getopt::SubCommand;
 use File::Basename qw/basename/;
 use Perl6::Say;
+use File::Path qw(rmtree);
+use File::Spec::Functions qw(catfile);
+
+use App::Dotto::Util qw/get_home_from_user determine_user_and_home load_config convert_filename hashize_arg_config/;
 
 our $VERSION = eval '0.001';
 my $ARGPARSER;
@@ -28,12 +32,28 @@ sub run {
                         usage => 'Do delete (if not given, "delete" does not do anything).',
                         required => 1,
                     },
+                    config_file => {
+                        name => [qw/c config-file/],
+                        attribute => '=s',
+                    },
+                    verbose => {
+                        name => [qw/v verbose/],
+                    },
+                    convert_filename => {
+                        name => [qw/O os-files/],
+                    },
+                    arg_config => {
+                        name => 'C',
+                        attribute => '=s@',
+                    },
                 },
                 usage => 'Delete dotfiles.',
+                auto_help_opt => 1,
             },
             version => {
                 sub => \&command_version,
                 usage => 'Show version',
+                auto_help_opt => 1,
             },
         },
     );
@@ -42,7 +62,45 @@ sub run {
 
 sub command_delete {
     my ($global_opts, $command_opts, $command_args) = @_;
-    # TODO
+
+    my $home = $command_opts->{home};
+    my $username = $command_opts->{username};
+    my $config_file = $command_opts->{config_file};
+    my $verbose = $command_opts->{verbose};
+    my $convert_filename = $command_opts->{convert_filename};
+    my $arg_config = $command_opts->{arg_config};
+
+    if (defined $home) {
+        # nop
+    }
+    elsif (defined $username) {
+        $home = get_home_from_user $username;
+    }
+    else {
+        ($username, $home) = determine_user_and_home;
+    }
+
+    if (!defined $config_file && exists $ENV{DOTTORC}) {
+        $config_file = $ENV{DOTTORC};
+    }
+    unless (defined $config_file) {
+        die "error: specify config file with -c option.\n";
+    }
+    my $c = load_config($config_file);
+    if (ref $arg_config eq 'ARRAY' && @$arg_config) {
+        %$c = (%$c, %{hashize_arg_config @$arg_config});
+    }
+
+    my @files = @{$c->{files}};
+    if ($convert_filename) {
+        @files = map { convert_filename $c, $_ } @files;
+    }
+    for my $file (@files) {
+        $file  = catfile($home, $file);
+        print "Deleting $file..." if $verbose;
+        rmtree($file);
+        print "done.\n" if $verbose;
+    }
 }
 
 sub command_version {
