@@ -4,12 +4,12 @@ use warnings;
 use utf8;
 use Carp;
 use Getopt::SubCommand;
-use File::Basename qw/basename/;
+use File::Basename qw/dirname basename/;
 use Perl6::Say;
 use File::Path qw(rmtree);
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile rel2abs);
 
-use App::Dotto::Util qw/get_home_from_user determine_user_and_home load_config convert_filename hashize_arg_config/;
+use App::Dotto::Util qw/get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install hashize_arg_config/;
 
 our $VERSION = eval '0.001';
 my $ARGPARSER;
@@ -50,9 +50,43 @@ sub run {
                 usage => 'Delete dotfiles.',
                 auto_help_opt => 1,
             },
+            install => {
+                sub => \&command_install,
+                options => {
+                    username => {
+                        name => [qw/u username/],
+                        attribute => '=s',
+                    },
+                    config_file => {
+                        name => [qw/c config-file/],
+                        attribute => '=s',
+                    },
+                    verbose => {
+                        name => [qw/v verbose/],
+                    },
+                    force => {
+                        name => [qw/f force/],
+                    },
+                    arg_config => {
+                        name => 'C',
+                        attribute => '=s@',
+                    },
+                    extract => {
+                        name => [qw/x extract/],
+                    },
+                    dry_run => {
+                        name => 'dry-run',
+                    },
+                    dereference => {
+                        name => [qw/L dereference/],
+                    },
+                },
+                usage => 'Copy dotfiles from directory to directory.',
+                auto_help_opt => 1,
+            },
             version => {
                 sub => \&command_version,
-                usage => 'Show version',
+                usage => 'Show dotto version.',
                 auto_help_opt => 1,
             },
         },
@@ -100,6 +134,93 @@ sub command_delete {
         print "Deleting $file..." if $verbose;
         rmtree($file);
         print "done.\n" if $verbose;
+    }
+}
+
+sub command_install {
+    my ($global_opts, $command_opts, $command_args) = @_;
+
+    my $home = $command_opts->{home};
+    my $username = $command_opts->{username};
+    my $config_file = $command_opts->{config_file};
+    my $verbose = $command_opts->{verbose};
+    my $force = $command_opts->{force};
+    my $extract = $command_opts->{extract};
+    my $dry_run = $command_opts->{dry_run};
+    my $dereference = $command_opts->{dereference};
+    my $directory = $command_opts->{directory};
+    my $arg_config = $command_opts->{arg_config};
+
+    if (defined $home) {
+        $username = get_user_from_home $home;
+        unless (defined $username) {
+            die "error: can't determine username "
+                . "from home directory on your platform.";
+        }
+    }
+    elsif (defined $username) {
+        $home = get_home_from_user $username;
+    }
+    else {
+        ($username, $home) = determine_user_and_home;
+    }
+
+    if (!defined $config_file && exists $ENV{DOTTORC}) {
+        $config_file = $ENV{DOTTORC};
+    }
+    unless (defined $config_file) {
+        die "error: specify config file with -c option.\n";
+    }
+    my $c = load_config($config_file);
+    if (ref $arg_config eq 'ARRAY' && @$arg_config) {
+        %$c = (%$c, %{hashize_arg_config @$arg_config});
+    }
+    my @files = @{$c->{files}};
+
+    if (!defined $directory && exists $c->{directory}) {
+        $directory = $c->{directory};
+    }
+    unless (defined $directory) {
+        warn "error: directory is undefined: please specify with -d {directory}\n";
+        $ARGPARSER->show_command_usage();
+        exit 1;    # this will be never reached.
+    }
+
+    # Install dotfiles to $home.
+    for my $file (@files) {
+        my ($src, $dest);
+        if ($extract) {
+            $src  = catfile($directory, $file);
+            $dest = catfile($home, convert_filename $c, $file);
+        }
+        else {
+            $src  = catfile($home, $file);
+            $dest = catfile($directory, $file);
+        }
+
+        if ($dry_run || $verbose) {
+            say "Copy $src -> $dest";
+            next if $dry_run;
+        }
+
+        if (-e $dest) {
+            unless ($force) {
+                warn "warning: sync-dotfiles: File exists '$dest'.\n";
+                next;
+            }
+            rmtree($dest);
+        }
+
+        install($src, $dest, $username, {dereference => $dereference});
+    }
+
+    unless ($extract) {
+        for my $file (@{$c->{ignore_files}}) {
+            my $dest = catfile($directory, convert_filename $c, $file);
+            if (-e $dest) {
+                rmtree($dest);
+            }
+        }
     }
 }
 
