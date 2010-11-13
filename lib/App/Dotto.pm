@@ -9,7 +9,7 @@ use Perl6::Say;
 use File::Path qw(rmtree);
 use File::Spec::Functions qw(catfile rel2abs);
 
-use App::Dotto::Util qw/get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install hashize_arg_config/;
+use App::Dotto::Util qw/get_user_from_home get_home_from_user determine_user_and_home load_config convert_filename install_symlink supported_symlink install hashize_arg_config/;
 
 our $VERSION = eval '0.001';
 my $ARGPARSER;
@@ -80,6 +80,13 @@ sub run {
                     dereference => {
                         name => [qw/L dereference/],
                     },
+                    symbolic => {
+                        name => [qw/s symbolic/],
+                    },
+                    directory => {
+                        name => [qw/d directory/],
+                        attribute => '=s',
+                    },
                 },
                 usage => 'Copy dotfiles from directory to directory.',
                 auto_help_opt => 1,
@@ -138,6 +145,16 @@ sub command_delete {
 }
 
 sub command_install {
+    my ($global_opts, $command_opts, $command_args) = @_;
+
+    if ($command_opts->{symbolic}) {
+        command_install_symlinks(@_);
+    }
+    else {
+        command_install_files(@_);
+    }
+}
+sub command_install_files {
     my ($global_opts, $command_opts, $command_args) = @_;
 
     my $home = $command_opts->{home};
@@ -221,6 +238,73 @@ sub command_install {
                 rmtree($dest);
             }
         }
+    }
+}
+sub command_install_symlinks {
+    my ($global_opts, $command_opts, $command_args) = @_;
+
+    my $home = $command_opts->{home};
+    my $directory = $command_opts->{directory};
+    my $username = $command_opts->{username};
+    my $force = $command_opts->{force};
+    my $verbose = $command_opts->{verbose};
+    my $config_file = $command_opts->{config_file};
+    my $arg_config = $command_opts->{arg_config};
+
+    unless (supported_symlink()) {
+        die "error: your platform does not support symbolic link.\n";
+    }
+
+    if (defined $home) {
+        $username = get_user_from_home $home;
+        unless (defined $username) {
+            die "error: can't determine username "
+                . "from home directory on your platform.";
+        }
+    }
+    elsif (defined $username) {
+        $home = get_home_from_user $username;
+    }
+    else {
+        ($username, $home) = determine_user_and_home;
+    }
+
+    if (!defined $config_file && exists $ENV{DOTTORC}) {
+        $config_file = $ENV{DOTTORC};
+    }
+    unless (defined $config_file) {
+        die "error: specify config file with -c option.\n";
+    }
+    my $c = load_config($config_file);
+    if (ref $arg_config eq 'ARRAY' && @$arg_config) {
+        %$c = (%$c, %{hashize_arg_config @$arg_config});
+    }
+    my @files = map { convert_filename $c, $_ } @{$c->{files}};
+
+    if (!defined $directory && exists $c->{directory}) {
+        $directory = $c->{directory};
+    }
+    unless (defined $directory) {
+        warn "error: directory is undefined: please specify with -d {directory}\n";
+        $ARGPARSER->show_command_usage();
+        exit 1;    # this will be never reached.
+    }
+
+    # Install symbolic links.
+    for my $file (@files) {
+        my $src  = rel2abs(catfile($directory, $file));
+        my $dest = catfile($home, $file);
+
+        if (-e $dest) {
+            unless ($force) {
+                warn "warning: install-symlinks: File exists '$dest'.\n";
+                next;
+            }
+            rmtree($dest);
+        }
+
+        say("$src -> $dest") if $verbose;
+        install_symlink $src, $dest, $username;
     }
 }
 
