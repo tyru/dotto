@@ -199,6 +199,7 @@ sub command_install_files {
     }
     unless (defined $directory) {
         warn "error: directory is undefined: please specify with -d {directory}\n";
+        sleep 1;
         $ARGPARSER->show_command_usage();
         exit 1;    # this will be never reached.
     }
@@ -286,6 +287,7 @@ sub command_install_symlinks {
     }
     unless (defined $directory) {
         warn "error: directory is undefined: please specify with -d {directory}\n";
+        sleep 1;
         $ARGPARSER->show_command_usage();
         exit 1;    # this will be never reached.
     }
