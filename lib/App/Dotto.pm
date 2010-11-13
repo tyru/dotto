@@ -19,32 +19,34 @@ sub run {
     $ARGPARSER ||= Getopt::SubCommand->new(
         usage_name => 'dotto',
         usage_version => $VERSION,
+        global_opts => {
+            username => {
+                name => [qw/u username/],
+                attribute => '=s',
+            },
+            config_file => {
+                name => [qw/c config-file/],
+                attribute => '=s',
+            },
+            verbose => {
+                name => [qw/v verbose/],
+            },
+            arg_config => {
+                name => 'C',
+                attribute => '=s@',
+            },
+        },
         commands => {
             delete => {
                 sub => \&command_delete,
                 options => {
-                    username => {
-                        name => [qw/u username/],
-                        attribute => '=s',
-                    },
                     force => {
                         name => [qw/f force/],
                         usage => 'Do delete (if not given, "delete" does not do anything).',
                         required => 1,
                     },
-                    config_file => {
-                        name => [qw/c config-file/],
-                        attribute => '=s',
-                    },
-                    verbose => {
-                        name => [qw/v verbose/],
-                    },
                     convert_filename => {
                         name => [qw/O os-files/],
-                    },
-                    arg_config => {
-                        name => 'C',
-                        attribute => '=s@',
                     },
                 },
                 usage => 'Delete dotfiles.',
@@ -53,23 +55,8 @@ sub run {
             install => {
                 sub => \&command_install,
                 options => {
-                    username => {
-                        name => [qw/u username/],
-                        attribute => '=s',
-                    },
-                    config_file => {
-                        name => [qw/c config-file/],
-                        attribute => '=s',
-                    },
-                    verbose => {
-                        name => [qw/v verbose/],
-                    },
                     force => {
                         name => [qw/f force/],
-                    },
-                    arg_config => {
-                        name => 'C',
-                        attribute => '=s@',
                     },
                     extract => {
                         name => [qw/x extract/],
@@ -104,12 +91,13 @@ sub run {
 sub command_delete {
     my ($global_opts, $command_opts, $command_args) = @_;
 
+    my $username = $global_opts->{username};
+    my $config_file = $global_opts->{config_file};
+    my $verbose = $global_opts->{verbose};
+    my $arg_config = $global_opts->{arg_config};
+
     my $home = $command_opts->{home};
-    my $username = $command_opts->{username};
-    my $config_file = $command_opts->{config_file};
-    my $verbose = $command_opts->{verbose};
     my $convert_filename = $command_opts->{convert_filename};
-    my $arg_config = $command_opts->{arg_config};
 
     if (defined $home) {
         # nop
@@ -244,13 +232,14 @@ sub command_install_files {
 sub command_install_symlinks {
     my ($global_opts, $command_opts, $command_args) = @_;
 
+    my $username = $global_opts->{username};
+    my $config_file = $global_opts->{config_file};
+    my $verbose = $global_opts->{verbose};
+    my $arg_config = $global_opts->{arg_config};
+
     my $home = $command_opts->{home};
     my $directory = $command_opts->{directory};
-    my $username = $command_opts->{username};
     my $force = $command_opts->{force};
-    my $verbose = $command_opts->{verbose};
-    my $config_file = $command_opts->{config_file};
-    my $arg_config = $command_opts->{arg_config};
 
     unless (supported_symlink()) {
         die "error: your platform does not support symbolic link.\n";
