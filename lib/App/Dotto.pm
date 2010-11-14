@@ -29,7 +29,7 @@ sub run {
                 attribute => '=s',
             },
             home => {
-                name => [qw/h home-directory/],
+                name => [qw/h home/],
                 attribute => '=s',
             },
             config_file => {
