@@ -102,6 +102,7 @@ sub run {
 
     my $command = $ARGPARSER->get_command;
     if ($ARGPARSER->can_invoke_command($command)) {
+        warn "\n" if $command eq 'help';
         $ARGPARSER->invoke_command(
             command => $command,
             optional_args => [$stash],
@@ -109,9 +110,10 @@ sub run {
     }
     else {
         if (defined $command) {
-            warn "Unknown command: $command\n\n";
+            warn "Unknown command: $command\n";
             sleep 1;
         }
+        warn "\n";
         $ARGPARSER->invoke_command('help');
     }
 }
