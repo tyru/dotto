@@ -142,7 +142,11 @@ sub build_stash {
     unless (defined $config_file) {
         die "error: specify config file with -c option.\n";
     }
-    my $c = load_config($config_file);
+    my $c = eval { load_config($config_file) };
+    if ($@ && exists $ENV{DOTTORC}) {
+        warn "warning: \$DOTTORC is defined but the path is not valid.\n";
+    }
+    $c ||= {};
     if (ref $arg_config eq 'ARRAY' && @$arg_config) {
         %$c = (%$c, %{hashize_arg_config @$arg_config});
     }
