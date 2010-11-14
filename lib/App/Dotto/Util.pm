@@ -15,18 +15,18 @@ use File::HomeDir ();
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(
-    chown_user
-    determine_user
-    determine_home
-    determine_user_and_home
-    get_home_from_user
-    get_user_from_home
     install
     install_symlink
     supported_symlink
+    chown_user
     load_config
     hashize_arg_config
     convert_filename
+    determine_home
+    get_home_from_user
+    determine_user_and_home
+    determine_user
+    get_user_from_home
 );
 
 
