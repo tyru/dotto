@@ -1,4 +1,6 @@
-#!/usr/bin/env perl
+package App::Dotto::Util;
+
+use 5.008_001;
 use strict;
 use warnings;
 use utf8;
@@ -24,6 +26,7 @@ our @EXPORT_OK = qw(
     supported_symlink
     load_config
     hashize_arg_config
+    convert_filename
 );
 
 
@@ -214,6 +217,7 @@ sub get_user_from_home {
 }
 
 
+1;
 __END__
 
 =head1 NAME
