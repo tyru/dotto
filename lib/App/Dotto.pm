@@ -85,7 +85,18 @@ sub run {
             },
         },
     );
-    $ARGPARSER->invoke_command(fallback => 'help');
+
+    my $command = $ARGPARSER->get_command;
+    if ($ARGPARSER->can_invoke_command($command)) {
+        $ARGPARSER->invoke_command($command);
+    }
+    else {
+        if (defined $command) {
+            warn "Unknown command: $command\n\n";
+            sleep 1;
+        }
+        $ARGPARSER->invoke_command('help');
+    }
 }
 
 sub command_delete {
