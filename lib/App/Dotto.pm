@@ -18,12 +18,18 @@ my $ARGPARSER;
 
 
 sub run {
+    my ($class) = @_;
+
     $ARGPARSER ||= Getopt::SubCommand->new(
         usage_name => 'dotto',
         usage_version => $VERSION,
         global_opts => {
             username => {
                 name => [qw/u username/],
+                attribute => '=s',
+            },
+            home => {
+                name => [qw/h home-directory/],
                 attribute => '=s',
             },
             config_file => {
@@ -88,9 +94,14 @@ sub run {
         },
     );
 
+    my $stash = $class->build_stash($ARGPARSER->get_global_opts);
+
     my $command = $ARGPARSER->get_command;
     if ($ARGPARSER->can_invoke_command($command)) {
-        $ARGPARSER->invoke_command($command);
+        $ARGPARSER->invoke_command(
+            command => $command,
+            optional_args => [$stash],
+        );
     }
     else {
         if (defined $command) {
@@ -101,19 +112,17 @@ sub run {
     }
 }
 
-sub command_delete {
-    my ($global_opts, $command_opts, $command_args) = @_;
+sub build_stash {
+    my ($class, $global_opts) = @_;
 
+    my $home = $global_opts->{home};
     my $username = $global_opts->{username};
     my $config_file = $global_opts->{config_file};
-    my $verbose = $global_opts->{verbose};
     my $arg_config = $global_opts->{arg_config};
 
-    my $home = $command_opts->{home};
-    my $convert_filename = $command_opts->{convert_filename};
-
+    # username, home
     if (defined $home) {
-        # nop
+        $username = get_user_from_home $home;
     }
     elsif (defined $username) {
         $home = get_home_from_user $username;
@@ -122,6 +131,7 @@ sub command_delete {
         ($username, $home) = determine_user_and_home;
     }
 
+    # config
     if (!defined $config_file && exists $ENV{DOTTORC}) {
         $config_file = $ENV{DOTTORC};
     }
@@ -132,6 +142,25 @@ sub command_delete {
     if (ref $arg_config eq 'ARRAY' && @$arg_config) {
         %$c = (%$c, %{hashize_arg_config @$arg_config});
     }
+
+    return {
+        username => $username,
+        home => $home,
+        config => $c,
+    };
+}
+
+sub command_delete {
+    my ($global_opts, $command_opts, $command_args, $stash) = @_;
+
+    # global_opts
+    my $verbose = $global_opts->{verbose};
+    # command_opts
+    my $convert_filename = $command_opts->{convert_filename};
+    # stash
+    my $c = $stash->{config};
+    my $home = $stash->{home};
+
 
     my @files = @{$c->{files}};
     if ($convert_filename) {
@@ -156,44 +185,26 @@ sub command_install {
     }
 }
 sub command_install_files {
-    my ($global_opts, $command_opts, $command_args) = @_;
+    my ($global_opts, $command_opts, $command_args, $stash) = @_;
 
-    my $home = $command_opts->{home};
-    my $username = $command_opts->{username};
-    my $config_file = $command_opts->{config_file};
-    my $verbose = $command_opts->{verbose};
+    # global_opts
+    my $verbose = $global_opts->{verbose};
+    # command_opts
+    my $convert_filename = $command_opts->{convert_filename};
     my $force = $command_opts->{force};
     my $extract = $command_opts->{extract};
     my $dry_run = $command_opts->{dry_run};
     my $dereference = $command_opts->{dereference};
     my $directory = $command_opts->{directory};
-    my $arg_config = $command_opts->{arg_config};
+    # stash
+    my $c = $stash->{config};
+    my $home = $stash->{home};
+    my $username = $stash->{username};
 
-    if (defined $home) {
-        $username = get_user_from_home $home;
-        unless (defined $username) {
-            die "error: can't determine username "
-                . "from home directory on your platform.";
-        }
+    unless (defined $username) {
+        die "error: can't determine username "
+            . "from home directory on your platform.";
     }
-    elsif (defined $username) {
-        $home = get_home_from_user $username;
-    }
-    else {
-        ($username, $home) = determine_user_and_home;
-    }
-
-    if (!defined $config_file && exists $ENV{DOTTORC}) {
-        $config_file = $ENV{DOTTORC};
-    }
-    unless (defined $config_file) {
-        die "error: specify config file with -c option.\n";
-    }
-    my $c = load_config($config_file);
-    if (ref $arg_config eq 'ARRAY' && @$arg_config) {
-        %$c = (%$c, %{hashize_arg_config @$arg_config});
-    }
-    my @files = @{$c->{files}};
 
     if (!defined $directory && exists $c->{directory}) {
         $directory = $c->{directory};
@@ -206,6 +217,7 @@ sub command_install_files {
     }
 
     # Install dotfiles to $home.
+    my @files = @{$c->{files}};
     for my $file (@files) {
         my ($src, $dest);
         if ($extract) {
@@ -243,46 +255,26 @@ sub command_install_files {
     }
 }
 sub command_install_symlinks {
-    my ($global_opts, $command_opts, $command_args) = @_;
+    my ($global_opts, $command_opts, $command_args, $stash) = @_;
 
-    my $username = $global_opts->{username};
-    my $config_file = $global_opts->{config_file};
+    # global_opts
     my $verbose = $global_opts->{verbose};
-    my $arg_config = $global_opts->{arg_config};
-
-    my $home = $command_opts->{home};
-    my $directory = $command_opts->{directory};
+    # command_opts
+    my $convert_filename = $command_opts->{convert_filename};
     my $force = $command_opts->{force};
+    my $directory = $command_opts->{directory};
+    # stash
+    my $c = $stash->{config};
+    my $home = $stash->{home};
+    my $username = $stash->{username};
 
     unless (supported_symlink()) {
         die "error: your platform does not support symbolic link.\n";
     }
-
-    if (defined $home) {
-        $username = get_user_from_home $home;
-        unless (defined $username) {
-            die "error: can't determine username "
-                . "from home directory on your platform.";
-        }
+    unless (defined $username) {
+        die "error: can't determine username "
+            . "from home directory on your platform.";
     }
-    elsif (defined $username) {
-        $home = get_home_from_user $username;
-    }
-    else {
-        ($username, $home) = determine_user_and_home;
-    }
-
-    if (!defined $config_file && exists $ENV{DOTTORC}) {
-        $config_file = $ENV{DOTTORC};
-    }
-    unless (defined $config_file) {
-        die "error: specify config file with -c option.\n";
-    }
-    my $c = load_config($config_file);
-    if (ref $arg_config eq 'ARRAY' && @$arg_config) {
-        %$c = (%$c, %{hashize_arg_config @$arg_config});
-    }
-    my @files = map { convert_filename $c, $_ } @{$c->{files}};
 
     if (!defined $directory && exists $c->{directory}) {
         $directory = $c->{directory};
@@ -295,6 +287,7 @@ sub command_install_symlinks {
     }
 
     # Install symbolic links.
+    my @files = map { convert_filename $c, $_ } @{$c->{files}};
     for my $file (@files) {
         my $src  = rel2abs(catfile($directory, $file));
         my $dest = catfile($home, $file);
