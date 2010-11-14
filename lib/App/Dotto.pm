@@ -91,6 +91,9 @@ sub run {
                 usage => 'Show dotto version.',
                 auto_help_opt => 1,
             },
+            help => {
+                usage => 'Show help text.',
+            },
         },
     );
 
