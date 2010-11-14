@@ -60,32 +60,33 @@ sub run {
                 usage => 'Delete dotfiles.',
                 auto_help_opt => 1,
             },
-            install => {
-                sub => \&command_install,
-                options => {
-                    force => {
-                        name => [qw/f force/],
+            (map {
+                my ($name, $usage, $is_gather) = @$_;
+                $name => {
+                    sub => sub { command_install($is_gather, @_) },
+                    options => {
+                        force => {
+                            name => [qw/f force/],
+                        },
+                        dry_run => {
+                            name => 'dry-run',
+                        },
+                        dereference => {
+                            name => [qw/L dereference/],
+                        },
+                        symbolic => {
+                            name => [qw/s symbolic/],
+                        },
+                        directory => {
+                            name => [qw/d directory/],
+                            attribute => '=s',
+                        },
                     },
-                    extract => {
-                        name => [qw/x extract/],
-                    },
-                    dry_run => {
-                        name => 'dry-run',
-                    },
-                    dereference => {
-                        name => [qw/L dereference/],
-                    },
-                    symbolic => {
-                        name => [qw/s symbolic/],
-                    },
-                    directory => {
-                        name => [qw/d directory/],
-                        attribute => '=s',
-                    },
-                },
-                usage => 'Copy dotfiles from directory to directory.',
-                auto_help_opt => 1,
-            },
+                    usage => $usage,
+                    auto_help_opt => 1,
+                };
+            } ['install', 'Copy dotfiles to home directory.', 0],
+              ['gather', 'Copy dotfiles from home directory', 1]),
             version => {
                 sub => \&command_version,
                 usage => 'Show dotto version.',
@@ -178,24 +179,23 @@ sub command_delete {
 }
 
 sub command_install {
-    my ($global_opts, $command_opts, $command_args) = @_;
+    my ($is_gather, $global_opts, $command_opts, $command_args) = @_;
 
     if ($command_opts->{symbolic}) {
         command_install_symlinks(@_);
     }
     else {
-        command_install_files(@_);
+        command_install_files($is_gather, @_);
     }
 }
 sub command_install_files {
-    my ($global_opts, $command_opts, $command_args, $stash) = @_;
+    my ($is_gather, $global_opts, $command_opts, $command_args, $stash) = @_;
 
     # global_opts
     my $verbose = $global_opts->{verbose};
     # command_opts
     my $convert_filename = $command_opts->{convert_filename};
     my $force = $command_opts->{force};
-    my $extract = $command_opts->{extract};
     my $dry_run = $command_opts->{dry_run};
     my $dereference = $command_opts->{dereference};
     my $directory = $command_opts->{directory};
@@ -223,7 +223,7 @@ sub command_install_files {
     my @files = @{$c->{files}};
     for my $file (@files) {
         my ($src, $dest);
-        if ($extract) {
+        if ($is_gather) {
             $src  = catfile($directory, $file);
             $dest = catfile($home, convert_filename $c, $file);
         }
@@ -248,7 +248,7 @@ sub command_install_files {
         install($src, $dest, $username, {dereference => $dereference});
     }
 
-    unless ($extract) {
+    unless ($is_gather) {
         for my $file (@{$c->{ignore_files}}) {
             my $dest = catfile($directory, convert_filename $c, $file);
             if (-e $dest) {
