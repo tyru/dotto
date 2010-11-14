@@ -185,13 +185,13 @@ sub command_delete {
 }
 
 sub command_install {
-    my ($is_gather, $global_opts, $command_opts, $command_args) = @_;
+    my (undef, undef, $command_opts, undef) = @_;
 
     if ($command_opts->{symbolic}) {
         command_install_symlinks(@_);
     }
     else {
-        command_install_files($is_gather, @_);
+        command_install_files(@_);
     }
 }
 sub command_install_files {
@@ -264,7 +264,7 @@ sub command_install_files {
     }
 }
 sub command_install_symlinks {
-    my ($global_opts, $command_opts, $command_args, $stash) = @_;
+    my (undef, $global_opts, $command_opts, $command_args, $stash) = @_;
 
     # global_opts
     my $verbose = $global_opts->{verbose};
