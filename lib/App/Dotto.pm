@@ -185,7 +185,8 @@ sub command_delete {
 }
 
 sub command_install {
-    my (undef, undef, $command_opts, undef) = @_;
+    # $is_gather, $global_opts, $command_opts, $command_args, $stash
+    my (undef, undef, $command_opts, undef, undef) = @_;
 
     if ($command_opts->{symbolic}) {
         command_install_symlinks(@_);
