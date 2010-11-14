@@ -3,7 +3,7 @@ use warnings;
 use Module::Build;
 
 my $builder = Module::Build->new(
-    module_name         => 'Bundle::Dotto',
+    module_name         => 'App::Dotto',
     license             => 'perl',
     dist_author         => 'tyru <tyru.exe@gmail.com>',
     dist_version        => '0.01',
