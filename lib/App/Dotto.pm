@@ -231,12 +231,12 @@ sub command_install_files {
     for my $file (@files) {
         my ($src, $dest);
         if ($is_gather) {
-            $src  = catfile($directory, $file);
-            $dest = catfile($home, convert_filename $c, $file);
-        }
-        else {
             $src  = catfile($home, $file);
             $dest = catfile($directory, $file);
+        }
+        else {
+            $src  = catfile($directory, $file);
+            $dest = catfile($home, convert_filename $c, $file);
         }
 
         if ($dry_run || $verbose) {
