@@ -98,11 +98,11 @@ sub run {
             },
         },
     );
+
     $ARGPARSER->parse_args([@ARGV]);
-
     my $stash = $class->build_stash($ARGPARSER->get_global_opts);
-
     my $command = $ARGPARSER->get_command;
+
     if ($ARGPARSER->can_invoke_command($command)) {
         warn "\n" if $command eq 'help';
         $ARGPARSER->invoke_command(
