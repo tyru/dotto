@@ -21,6 +21,7 @@ sub run {
     my ($class) = @_;
 
     $ARGPARSER ||= Getopt::SubCommand->new(
+        do_parse_args => 0,
         usage_name => 'dotto',
         usage_version => $VERSION,
         global_opts => {
@@ -97,6 +98,7 @@ sub run {
             },
         },
     );
+    $ARGPARSER->parse_args([@ARGV]);
 
     my $stash = $class->build_stash($ARGPARSER->get_global_opts);
 
