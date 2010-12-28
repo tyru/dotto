@@ -105,10 +105,10 @@ sub run {
 
     if ($ARGPARSER->can_invoke_command($command)) {
         warn "\n" if $command eq 'help';
-        $ARGPARSER->invoke_command(
+        $ARGPARSER->invoke_command({
             command => $command,
             optional_args => [$stash],
-        );
+        });
     }
     else {
         if (defined $command) {
@@ -163,12 +163,12 @@ sub build_stash {
 }
 
 sub command_delete {
-    my ($global_opts, $command_opts, $command_args, $stash) = @_;
+    my ($getopt, $stash) = @_;
 
     # global_opts
-    my $verbose = $global_opts->{verbose};
+    my $verbose = $getopt->get_global_opts('verbose');
     # command_opts
-    my $convert_filename = $command_opts->{convert_filename};
+    my $convert_filename = $getopt->get_command_opts('convert_filename');
     # stash
     my $c = $stash->{config};
     my $home = $stash->{home};
@@ -187,10 +187,10 @@ sub command_delete {
 }
 
 sub command_install {
-    # $is_gather, $global_opts, $command_opts, $command_args, $stash
-    my (undef, undef, $command_opts, undef, undef) = @_;
+    # $is_gather, $getopt, $stash
+    my (undef, $getopt, undef) = @_;
 
-    if ($command_opts->{symbolic}) {
+    if ($getopt->get_command_opts('symbolic')) {
         command_install_symlinks(@_);
     }
     else {
@@ -198,16 +198,16 @@ sub command_install {
     }
 }
 sub command_install_files {
-    my ($is_gather, $global_opts, $command_opts, $command_args, $stash) = @_;
+    my ($is_gather, $getopt, $stash) = @_;
 
     # global_opts
-    my $verbose = $global_opts->{verbose};
+    my $verbose = $getopt->get_global_opts('verbose');
     # command_opts
-    my $convert_filename = $command_opts->{convert_filename};
-    my $force = $command_opts->{force};
-    my $dry_run = $command_opts->{dry_run};
-    my $dereference = $command_opts->{dereference};
-    my $directory = $command_opts->{directory};
+    my $convert_filename = $getopt->get_command_opts('convert_filename');
+    my $force = $getopt->get_command_opts('force');
+    my $dry_run = $getopt->get_command_opts('dry_run');
+    my $dereference = $getopt->get_command_opts('dereference');
+    my $directory = $getopt->get_command_opts('directory');
     # stash
     my $c = $stash->{config};
     my $home = $stash->{home};
@@ -267,14 +267,14 @@ sub command_install_files {
     }
 }
 sub command_install_symlinks {
-    my (undef, $global_opts, $command_opts, $command_args, $stash) = @_;
+    my (undef, $getopt, $stash) = @_;
 
     # global_opts
-    my $verbose = $global_opts->{verbose};
+    my $verbose = $getopt->get_global_opts('verbose');
     # command_opts
-    my $convert_filename = $command_opts->{convert_filename};
-    my $force = $command_opts->{force};
-    my $directory = $command_opts->{directory};
+    my $convert_filename = $getopt->get_command_opts('convert_filename');
+    my $force = $getopt->get_command_opts('force');
+    my $directory = $getopt->get_command_opts('directory');
     # stash
     my $c = $stash->{config};
     my $home = $stash->{home};
