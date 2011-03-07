@@ -16,4 +16,6 @@ requires 'File::Copy::Recursive';
 requires 'File::HomeDir';
 requires 'YAML';
 
+install_script 'dotto';
+
 WriteAll;
